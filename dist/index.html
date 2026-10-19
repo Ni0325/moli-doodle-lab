@@ -25,11 +25,14 @@
         <div class="canvas-toolbar"><div class="canvas-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15Z"/></svg><strong>你的画布</strong><span>鼠标 / 手指</span></div><div class="tools"><button id="undo" class="icon-button" disabled aria-label="撤销上一笔" title="撤销上一笔（Ctrl / ⌘ + Z）"><svg viewBox="0 0 24 24"><path d="m8 5-5 5 5 5M3 10h11a6 6 0 0 1 0 12" transform="translate(0 -2)"/></svg></button><span class="tool-separator"></span><button id="clear" class="clear-button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 10v7M14 10v7"/></svg>清空</button></div></div>
         <div class="canvas-stage" id="canvas-stage">
           <canvas id="drawing" aria-label="绘画画板，使用鼠标、触控笔或手指画图"></canvas>
+          <canvas id="particles" aria-hidden="true"></canvas>
+          <div id="particle-status" class="particle-status" role="status" hidden></div>
           <div class="canvas-hint" id="canvas-hint"><div class="hint-doodle" aria-hidden="true"><svg viewBox="0 0 100 84"><path d="M48 16c-2-13 10-14 15-13M48 21C18 0 3 30 17 53s22 22 31 17c14 7 22-4 31-20s4-42-19-34M26 30c-6 5-6 13-4 17"/></svg></div><h2>在这里随手画画</h2><p>试试苹果、太阳，或一把雨伞</p><span>第一笔，就从这里开始</span></div>
           <span class="paper-corner" aria-hidden="true"></span>
           <div id="sample-label" class="sample-label" hidden></div>
         </div>
         <div class="canvas-footer"><div class="brush-description"><span class="ink-dot"></span><span>墨色画笔</span><span class="footer-divider">/</span><span id="stroke-count">0 笔</span></div><button id="save" class="save-button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 15v5h16v-5"/></svg>保存作品</button></div>
+        <div id="particle-actions" class="particle-actions" hidden><span>保留你的每一笔</span><button id="particle-replay">再看一次</button><button id="particle-return">继续画</button></div>
       </section>
       <aside class="guess-panel" aria-label="AI 实时猜测">
         <div class="guess-heading"><span class="small-label">墨粒的猜测</span><span class="live-badge" id="live-badge"><i></i><span id="engine-status">准备中</span></span></div>

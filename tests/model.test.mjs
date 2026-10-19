@@ -3,10 +3,25 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {rasterize,inkLength} from '../dist/features.js';
 import {DoodleModel} from '../dist/model.js';
+import {sampleStrokes} from '../dist/particles.js';
 const metadata=JSON.parse(fs.readFileSync(new URL('../dist/assets/model.json',import.meta.url)));
 const buffer=fs.readFileSync(new URL('../dist/assets/weights.bin',import.meta.url));
 const model=new DoodleModel(metadata,buffer.buffer.slice(buffer.byteOffset,buffer.byteOffset+buffer.byteLength));
 const fixtures=JSON.parse(fs.readFileSync(new URL('./fixtures.json',import.meta.url)));
+
+test('Particles preserve pen-up gaps and do not mutate recognition input',()=>{
+  const strokes=[[[0,0],[20,0]],[[100,100],[120,100]]],before=JSON.stringify(strokes);
+  const points=sampleStrokes(strokes);
+  assert.ok(points.length>0);
+  for(const [x,y] of points)assert.ok((y===0&&x>=0&&x<=20)||(y===100&&x>=100&&x<=120));
+  assert.equal(JSON.stringify(strokes),before);
+  assert.deepEqual(sampleStrokes([[[1,1],[1,1]]]),[]);
+});
+test('Particle count stays bounded for complex drawings',()=>{
+  const points=sampleStrokes([Array.from({length:6000},(_,i)=>[i%2*600,i])]);
+  assert.equal(points.length,1400);
+  assert.ok(points.every(point=>point.every(Number.isFinite)));
+});
 
 test('Python and JavaScript preprocessing agree on held-out drawings',()=>{
   for(const fixture of fixtures) {

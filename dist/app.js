@@ -1,10 +1,28 @@
 import {inkLength} from './features.js';
+import {ParticleArtwork} from './particles.js';
 
 const $=id=>document.getElementById(id);
 const canvas=$('drawing'), context=canvas.getContext('2d');
 const state={strokes:[],activePointer:null,revision:0,lastSubmitted:-1,busy:false,ready:false,metadata:null,worker:null,engine:null,confirmed:null,sample:null};
 const SIDE=600; // Store points in a stable logical square, independent of screen/DPR.
 let toastTimeout,loadGeneration=0;
+const particles=new ParticleArtwork($('particles'),text=>{$('particle-status').textContent=text;});
+function stopParticles() {
+  particles.stop();$('canvas-stage').classList.remove('particle-mode');
+  $('particle-status').hidden=true;$('particle-actions').hidden=true;
+}
+function playParticles() {
+  cancelPointer();
+  if(particles.play(state.strokes)) {
+    $('canvas-stage').classList.add('particle-mode');
+    $('particle-status').hidden=false;$('particle-actions').hidden=false;
+  }
+}
+$('particle-replay').addEventListener('click',playParticles);
+$('particle-return').addEventListener('click',()=>{
+  stopParticles();state.confirmed=null;
+  $('confirmation').hidden=true;state.lastSubmitted=-1;
+});
 
 function notify(text) {
   $('toast').textContent=text;$('toast').hidden=false;
@@ -14,6 +32,7 @@ function notify(text) {
 function fitCanvas() {
   const rectangle=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,3);
   canvas.width=Math.round(rectangle.width*dpr);canvas.height=Math.round(rectangle.height*dpr);
+  particles.resize(canvas.width,canvas.height);
   renderDrawing();
 }
 
@@ -57,6 +76,7 @@ function resetGuesses() {
 }
 
 function changed({reset=false}={}) {
+  stopParticles();
   state.revision++;
   state.confirmed=null;$('confirmation').hidden=true;
   $('moli-face').classList.remove('happy');
@@ -110,13 +130,14 @@ function confirmGuess(index,revision) {
   state.confirmed=index;
   $('guess-title').textContent=`原来是${category.name}！`;
   $('guess-description').textContent='猜对啦。你的每一笔，都有自己的风格。';
-  $('confirmation').textContent='已由你确认。继续画，或者清空画布开始新作品。';
+  $('confirmation').textContent='猜对了！你的笔画正在变成星尘。可以保存粒子作品，或返回继续画。';
   $('confirmation').hidden=false;$('moli-face').classList.add('happy');
   for(const row of $('predictions').children) row.classList.toggle('selected',Number(row.dataset.index)===index);
+  playParticles();
 }
 
 function displayPrediction(scores,id) {
-  if(id!==state.revision||!state.strokes.length) return;
+  if(id!==state.revision||!state.strokes.length||state.confirmed!==null) return;
   const ranking=scores.map((score,index)=>({score,index})).sort((a,b)=>b.score-a.score).slice(0,3);
   $('prediction-empty').hidden=true;$('predictions').hidden=false;
   const uncertain=ranking[0].score<.45||ranking[0].score-ranking[1].score<.1;
@@ -230,7 +251,8 @@ $('save').addEventListener('click',()=>{
   const pictureHeight=Math.round(1200*canvas.height/canvas.width);
   out.height=pictureHeight+65;
   const drawing=out.getContext('2d');renderDrawing(drawing,{width:1200,height:pictureHeight});
-  drawing.globalCompositeOperation='destination-over';drawing.fillStyle='#fff';drawing.fillRect(0,0,out.width,out.height);
+  if(particles.active){drawing.clearRect(0,0,out.width,out.height);drawing.drawImage($('particles'),0,0,1200,pictureHeight);}
+  drawing.globalCompositeOperation='destination-over';drawing.fillStyle=particles.active?'#191526':'#fff';drawing.fillRect(0,0,out.width,out.height);
   drawing.globalCompositeOperation='source-over';drawing.fillStyle='#a297ac';drawing.font='18px sans-serif';
   drawing.fillText(`墨粒 · ${identity.name} ${identity.id}`,35,out.height-25);
   out.toBlob(blob=>{
