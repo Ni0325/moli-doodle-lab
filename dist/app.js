@@ -1,5 +1,6 @@
 import {inkLength} from './features.js';
 import {ParticleArtwork} from './particles.js';
+import {artworkMessages} from './messages.js';
 
 const $=id=>document.getElementById(id);
 const canvas=$('drawing'), context=canvas.getContext('2d');
@@ -129,7 +130,7 @@ function confirmGuess(index,revision) {
   const category=state.metadata.classes[index];
   state.confirmed=index;
   $('guess-title').textContent=`原来是${category.name}！`;
-  $('guess-description').textContent='猜对啦。你的每一笔，都有自己的风格。';
+  $('guess-description').textContent=artworkMessages[category.id]??'你的每一笔，都有自己的风格。';
   $('confirmation').textContent='猜对了！你的笔画正在变成星尘。可以保存粒子作品，或返回继续画。';
   $('confirmation').hidden=false;$('moli-face').classList.add('happy');
   for(const row of $('predictions').children) row.classList.toggle('selected',Number(row.dataset.index)===index);
