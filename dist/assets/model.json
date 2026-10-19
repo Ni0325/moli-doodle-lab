@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "architecture": [
+    784,
+    128,
+    64,
+    12
+  ],
+  "weight_sizes": [
+    100352,
+    128,
+    8192,
+    64,
+    768,
+    12
+  ],
+  "classes": [
+    {
+      "id": "apple",
+      "name": "苹果",
+      "icon": "🍎"
+    },
+    {
+      "id": "banana",
+      "name": "香蕉",
+      "icon": "🍌"
+    },
+    {
+      "id": "bicycle",
+      "name": "自行车",
+      "icon": "🚲"
+    },
+    {
+      "id": "fish",
+      "name": "鱼",
+      "icon": "🐟"
+    },
+    {
+      "id": "flower",
+      "name": "花",
+      "icon": "🌼"
+    },
+    {
+      "id": "house",
+      "name": "房子",
+      "icon": "🏠"
+    },
+    {
+      "id": "ice cream",
+      "name": "冰淇淋",
+      "icon": "🍦"
+    },
+    {
+      "id": "moon",
+      "name": "月亮",
+      "icon": "🌙"
+    },
+    {
+      "id": "star",
+      "name": "星星",
+      "icon": "⭐"
+    },
+    {
+      "id": "sun",
+      "name": "太阳",
+      "icon": "☀️"
+    },
+    {
+      "id": "tree",
+      "name": "树",
+      "icon": "🌳"
+    },
+    {
+      "id": "umbrella",
+      "name": "雨伞",
+      "icon": "☂️"
+    }
+  ],
+  "preprocessing": "stroke-distance-v1",
+  "weights": "weights.bin",
+  "test_accuracy": 0.8631944444444445,
+  "test_count": 2880
+}
