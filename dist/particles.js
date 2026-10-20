@@ -1,3 +1,5 @@
+import {createShapePoints} from './particle-shapes.js';
+
 // Sample the original strokes by arc length, without connecting separate strokes.
 export function sampleStrokes(strokes, limit=1400) {
   const segments=[];let total=0;
@@ -29,12 +31,15 @@ export class ParticleArtwork {
     });
     this.reduced.addEventListener('change',()=>{if(this.active&&this.reduced.matches){cancelAnimationFrame(this.frame);this.elapsed=this.duration;this.draw(this.duration);}});
   }
-  play(strokes) {
+  play(strokes,category) {
     this.stop();const points=sampleStrokes(strokes);
     if(!points.length)return false;
-    this.points=points.map(([x,y],i)=>{
+    const targets=createShapePoints(category?.id);
+    this.categoryName=category?.name??'作品';
+    this.points=(targets.length?targets:points.map(([x,y])=>({x,y,color:'#bba4ff'}))).map((target,i,all)=>{
+      const [x,y]=points[Math.floor(i*points.length/all.length)];
       const angle=Math.random()*Math.PI*2,radius=45+Math.random()*135;
-      return {x,y,dx:Math.cos(angle)*radius,dy:Math.sin(angle)*radius,phase:Math.random()*Math.PI*2,radius:.9+Math.random()*1.1,color:i%5===0?'#ffce98':i%3===0?'#f0dfff':'#bba4ff'};
+      return {x,y,tx:target.x,ty:target.y,dx:Math.cos(angle)*radius,dy:Math.sin(angle)*radius,phase:Math.random()*Math.PI*2,radius:1.7+Math.random()*.5,color:target.color};
     });
     this.active=true;this.start=performance.now();this.elapsed=0;this.phase='';
     if(this.reduced.matches){this.elapsed=this.duration;this.draw(this.duration);}
@@ -53,16 +58,17 @@ export class ParticleArtwork {
   draw(time) {
     const ctx=this.context,w=this.canvas.width,h=this.canvas.height,scale=Math.min(w,h)/600;
     const ox=(w-600*scale)/2,oy=(h-600*scale)/2;
-    ctx.clearRect(0,0,w,h);ctx.fillStyle='#191526';ctx.fillRect(0,0,w,h);
-    const phase=time<650?'正在把笔画变成星尘':time<2100?'让灵感散开':time<4600?'让星尘回到你的画里':'你的作品，变成了一片星光';
+    ctx.clearRect(0,0,w,h);ctx.fillStyle='#000000';ctx.fillRect(0,0,w,h);
+    const phase=time<650?'正在把笔画变成星尘':time<2100?'让灵感散开':time<4600?`正在聚成彩色${this.categoryName}`:`送你一份星光画成的${this.categoryName}`;
     if(phase!==this.phase){this.phase=phase;this.onPhase(phase);}
     const progress=Math.max(0,Math.min(1,(time-650)/3950)),spread=Math.sin(Math.PI*progress)**2;
-    ctx.globalCompositeOperation='lighter';
+    const morph=Math.max(0,Math.min(1,(time-1700)/2900)),blend=morph*morph*(3-2*morph);
+    ctx.globalCompositeOperation='source-over';
     for(const p of this.points) {
-      const x=(p.x+p.dx*spread+Math.sin(progress*6.28+p.phase)*7*spread)*scale+ox;
-      const y=(p.y+p.dy*spread+Math.cos(progress*6.28+p.phase)*7*spread)*scale+oy;
+      const x=(p.x+(p.tx-p.x)*blend+p.dx*spread+Math.sin(progress*6.28+p.phase)*7*spread)*scale+ox;
+      const y=(p.y+(p.ty-p.y)*blend+p.dy*spread+Math.cos(progress*6.28+p.phase)*7*spread)*scale+oy;
       const radius=p.radius*scale;
-      ctx.globalAlpha=.12;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(x,y,radius*3,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=.12;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(x,y,radius*2.3,0,Math.PI*2);ctx.fill();
       ctx.globalAlpha=.72+.28*Math.sin(p.phase+progress*4);ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';

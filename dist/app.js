@@ -14,7 +14,7 @@ function stopParticles() {
 }
 function playParticles() {
   cancelPointer();
-  if(particles.play(state.strokes)) {
+  if(particles.play(state.strokes,state.metadata?.classes[state.confirmed])) {
     $('canvas-stage').classList.add('particle-mode');
     $('particle-status').hidden=false;$('particle-actions').hidden=false;
   }
@@ -42,7 +42,7 @@ function renderDrawing(target=context,dimensions=null) {
   target.clearRect(0,0,width,height);
   const scale=Math.min(width,height)/SIDE;
   const ox=(width-SIDE*scale)/2,oy=(height-SIDE*scale)/2;
-  target.strokeStyle='#30283e';target.fillStyle='#30283e';
+  target.strokeStyle='#e9e7e2';target.fillStyle='#e9e7e2';
   target.lineWidth=4.2*scale;target.lineCap='round';target.lineJoin='round';
   for(const stroke of state.strokes) {
     if(!stroke.length) continue;
@@ -71,8 +71,8 @@ function resetGuesses() {
   $('confirmation').hidden=true;$('predictions').hidden=true;$('predictions').replaceChildren();
   $('prediction-empty').hidden=false;
   $('prediction-empty').querySelector('p').textContent=state.strokes.length?'再添几条线吧':'等待你的第一笔';
-  $('guess-title').innerHTML='我在看，<br>你尽管画。';
-  $('guess-description').innerHTML='画出几条线，我就开始猜。<br>不用画得完美，有你的风格就好。';
+  $('guess-title').innerHTML='等待线条成形。';
+  $('guess-description').innerHTML='自由落笔，识别会随笔迹更新。';
   $('moli-face').classList.remove('thinking','happy');
 }
 
@@ -129,9 +129,9 @@ function confirmGuess(index,revision) {
   if(revision!==state.revision) {notify('你刚添了几笔，等我更新一下猜测');return;}
   const category=state.metadata.classes[index];
   state.confirmed=index;
-  $('guess-title').textContent=`原来是${category.name}！`;
+  $('guess-title').textContent=`${category.name} / ${category.id.toUpperCase()}`;
   $('guess-description').textContent=artworkMessages[category.id]??'你的每一笔，都有自己的风格。';
-  $('confirmation').textContent='猜对了！你的笔画正在变成星尘。可以保存粒子作品，或返回继续画。';
+  $('confirmation').textContent='形态已确认。笔迹将聚成彩色粒子轮廓，可保存或继续创作。';
   $('confirmation').hidden=false;$('moli-face').classList.add('happy');
   for(const row of $('predictions').children) row.classList.toggle('selected',Number(row.dataset.index)===index);
   playParticles();
@@ -253,7 +253,7 @@ $('save').addEventListener('click',()=>{
   out.height=pictureHeight+65;
   const drawing=out.getContext('2d');renderDrawing(drawing,{width:1200,height:pictureHeight});
   if(particles.active){drawing.clearRect(0,0,out.width,out.height);drawing.drawImage($('particles'),0,0,1200,pictureHeight);}
-  drawing.globalCompositeOperation='destination-over';drawing.fillStyle=particles.active?'#191526':'#fff';drawing.fillRect(0,0,out.width,out.height);
+  drawing.globalCompositeOperation='destination-over';drawing.fillStyle='#000';drawing.fillRect(0,0,out.width,out.height);
   drawing.globalCompositeOperation='source-over';drawing.fillStyle='#a297ac';drawing.font='18px sans-serif';
   drawing.fillText(`墨粒 · ${identity.name} ${identity.id}`,35,out.height-25);
   out.toBlob(blob=>{
